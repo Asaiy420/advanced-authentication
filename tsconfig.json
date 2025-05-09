@@ -7,7 +7,7 @@
     // Target ECMAScript Next to enable the latest JavaScript features.
     "target": "ESNext",
     // Output directory for compiled JavaScript files (only used if "noEmit" is false).
-    "outDir": "./dist",
+    "outDir": "backend/dist",
     // Root directory for TypeScript source files.
     "rootDir": "./backend/src",
     // Enable all strict type-checking options.
