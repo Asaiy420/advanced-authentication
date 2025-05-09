@@ -3,7 +3,7 @@ import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail } from "../mailtrap/email.js";
+import { sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
 
 export const Signup = async (req: Request, res: Response): Promise<any> => {
   const { username, email, password } = req.body;
@@ -67,6 +67,34 @@ export const Signup = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
+export const verifyEmail = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  const { code } = req.body;
+
+  try {
+    const user = await User.findOne({
+      verificationToken: code,
+      verificationTokenExpiresAt: {$gt: Date.now()}
+    });
+
+    if (!user){
+      return res.status(400).json({sucess:false, message: "Invalid or expired verification code"})
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiresAt = undefined;
+
+    await user.save();
+
+    await sendWelcomeEmail(user.email, user.username)
+
+
+  } catch (error) {}
+};
+
 export const Login = async (req: Request, res: Response): Promise<any> => {
   res.send("Login page");
 };
@@ -74,3 +102,4 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
 export const Logout = async (req: Request, res: Response): Promise<any> => {
   res.send("logout page");
 };
+  
