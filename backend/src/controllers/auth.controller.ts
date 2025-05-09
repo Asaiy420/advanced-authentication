@@ -3,6 +3,7 @@ import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { sendVerificationEmail } from "../mailtrap/email.js";
 
 export const Signup = async (req: Request, res: Response): Promise<any> => {
   const { username, email, password } = req.body;
@@ -50,13 +51,15 @@ export const Signup = async (req: Request, res: Response): Promise<any> => {
 
     generateTokenAndSetCookie(res, user._id);
 
+    await sendVerificationEmail(user.email, verificationToken);
+
     const userObj = user.toObject() as any;
-        delete userObj.password;
+    delete userObj.password;
 
     res.status(201).json({
       success: true,
       message: "User created successfully!",
-      user: userObj
+      user: userObj,
     });
   } catch (error: any) {
     console.log("Error in signup controller", error.message);
